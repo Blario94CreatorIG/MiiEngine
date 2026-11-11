@@ -1,4 +1,4 @@
-import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.173.0/build/three.module.js";
+const THREE = globalThis.THREE;
 
 const $ = (id) => document.getElementById(id);
 const STORE = "miiengine-sandbox-avatar-v1";
@@ -41,31 +41,30 @@ bench(-6,1);bench(6,2);
 const collectibles=[];
 for(let i=0;i<8;i++){const a=i*Math.PI/4;const c=new THREE.Mesh(new THREE.TorusGeometry(.28,.09,10,24),mat("#ffdb62"));c.position.set(Math.cos(a)*7,.8,Math.sin(a)*7);c.rotation.x=Math.PI/2;c.castShadow=true;scene.add(c);collectibles.push(c)}
 const avatarRoot=new THREE.Group();scene.add(avatarRoot);
-let avatarParts=[];
-function clearAvatar(){for(const o of avatarParts){avatarRoot.remove(o);o.traverse?.(n=>{if(n.geometry)n.geometry.dispose();if(n.material&&!Array.isArray(n.material))n.material.dispose()})}avatarParts=[]}
-function addPart(o){avatarRoot.add(o);avatarParts.push(o);return o}
-function makeAvatar(){clearAvatar();const skin=mat(avatar.skin),hair=mat(avatar.hair),shirt=mat(avatar.shirt),shoes=mat(avatar.shoes),white=mat("#fffdf7"),black=mat("#25232a"),mouth=mat("#8b3941");
-const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.42,.55,5,12),shirt);torso.position.y=1.05;torso.castShadow=true;addPart(torso);
-for(const side of [-1,1]){const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.16,.47,4,10),mat("#394b70"));leg.position.set(side*.2,.37,0);leg.castShadow=true;addPart(leg);const shoe=new THREE.Mesh(new THREE.BoxGeometry(.34,.16,.48),shoes);shoe.position.set(side*.2,.12,.09);shoe.castShadow=true;addPart(shoe);
-const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.13,.47,4,10),shirt);arm.position.set(side*.52,1.15,0);arm.rotation.z=side*-.18;arm.castShadow=true;addPart(arm);const hand=new THREE.Mesh(new THREE.SphereGeometry(.14,14,10),skin);hand.position.set(side*.55,.82,0);addPart(hand)}
-const head=sphere(avatarRoot,0,2.13,0,.61,.69,.55,skin);avatarParts.push(head);
-sphere(avatarRoot,-.61,2.1,0,.13,.18,.12,skin);sphere(avatarRoot,.61,2.1,0,.13,.18,.12,skin);
-const hairTop=sphere(avatarRoot,0,2.68,-.03,.65,.3,.58,hair);avatarParts.push(hairTop);
-const hairBack=sphere(avatarRoot,0,2.35,-.38,.58,.48,.22,hair);avatarParts.push(hairBack);
-const style=Number(avatar.hairType)||0;
-if(style%3===1){for(let i=0;i<5;i++){const tuft=sphere(avatarRoot,-.42+i*.21,2.78,.02,.18,.25,.19,hair);avatarParts.push(tuft)}}else if(style%3===2){const fringe=sphere(avatarRoot,0,2.57,.46,.5,.16,.13,hair);avatarParts.push(fringe)}
-for(const x of [-.22,.22]){const eye=sphere(avatarRoot,x,2.18,.493,.105,.13,.045,white);avatarParts.push(eye);const pupil=sphere(avatarRoot,x,2.18,.535,.05,.075,.025,black);avatarParts.push(pupil);const brow=box(avatarRoot,x,2.38,.49,.2,.045,.06,hair);avatarParts.push(brow)}
-const nose=sphere(avatarRoot,0,2.02,.55,.075,.11,.07,skin);avatarParts.push(nose);
-const smile=new THREE.Mesh(new THREE.TorusGeometry(.105,.025,7,18,Math.PI),mouth);smile.position.set(0,1.91,.54);smile.rotation.z=Math.PI;avatarRoot.add(smile);avatarParts.push(smile);
-avatarRoot.position.set(0,0,0);
+let activeNativeModel=null;
+async function makeAvatar(){
+  if(activeNativeModel){activeNativeModel.dispose?.();activeNativeModel=null;}
+  avatarRoot.clear();
+  if(!avatar.modelData){$("tip").textContent="Choose a Mii from your library to enter the sandbox.";return;}
+  try{
+    const native=await window.MiiSandboxNative.create(avatar.modelData);
+    activeNativeModel=native;
+    avatarRoot.add(native.group);
+    native.group.position.set(0,0,0);
+    native.group.rotation.set(0,0,0);
+    $("tip").textContent=(avatar.name||"Your Mii")+" is ready to explore!";
+  }catch(error){
+    console.error("Native Mii renderer failed:",error);
+    $("tip").textContent="Could not load this Mii model. Reopen the creator and choose it again.";
+  }
 }
 function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}}
 function save(){localStorage.setItem(STORE,JSON.stringify(avatar))}
-function setFields(){ $("avatar-name").value=avatar.name||"My Mii";$("skin-color").value=avatar.skin;$("hair-color").value=avatar.hair;$("shirt-color").value=avatar.shirt;$("shoe-color").value=avatar.shoes;$("avatar-preview").innerHTML="<span>🙂</span><b>"+escapeHtml(avatar.name||"My Mii")+"</b>"}
+function setFields(){ $("avatar-name").value=avatar.name||"My Mii";$("avatar-preview").innerHTML="<span>✦</span><b>"+escapeHtml(avatar.name||"My Mii")+"</b>"}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function applyAvatar(){avatar={...avatar,name:$("avatar-name").value.trim().slice(0,24)||"My Mii",skin:$("skin-color").value,hair:$("hair-color").value,shirt:$("shirt-color").value,shoes:$("shoe-color").value};save();makeAvatar();setFields();$("tip").textContent=avatar.name+" is ready to explore!"}
+function applyAvatar(){avatar={...avatar,name:$("avatar-name").value.trim().slice(0,24)||"My Mii"};save();setFields();$("tip").textContent="Character name saved."}
 function colorAt(list,index,fallback){return list[Number(index)]||fallback}
-function acceptMii(mii){if(!mii||typeof mii!=="object")return;avatar={...avatar,name:mii.nickname||"My Mii",skin:colorAt(SKIN,mii.facelineColor,"#f5c69b"),hair:colorAt(COMMON,mii.hairColor,"#33251f"),shirt:colorAt(FAV,mii.favoriteColor,"#477ee8"),shoes:"#303747",hairType:mii.hairType||0,eyeType:mii.eyeType||0,mouthType:mii.mouthType||0};save();setFields();makeAvatar();$("tip").textContent="Loaded "+avatar.name+" from your Mii library."}
+async function acceptMii(mii){if(!mii||typeof mii!=="object"||!mii.modelData)return;avatar={...avatar,name:mii.nickname||mii.name||"My Mii",modelData:mii.modelData};save();setFields();await makeAvatar();$("tip").textContent="Loaded the original 3D Mii model for "+avatar.name+"."}
 $("choose-mii").addEventListener("click",()=>{const popup=window.open("/app?select","miiengine-mii-picker","popup,width=1180,height=820");if(!popup){$("tip").textContent="Allow pop-ups to choose a Mii from your library.";return}$("tip").textContent="Choose a Mii in the creator window. It will return here automatically."});
 window.addEventListener("message",e=>{if(e.origin!==location.origin)return;if(e.data?.type==="miic-select")acceptMii(e.data.data)});
 $("apply-avatar").addEventListener("click",applyAvatar);setFields();makeAvatar();
