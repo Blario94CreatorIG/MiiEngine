@@ -3,5 +3,6 @@
   "buildCommand": "npm run build:static",
   "outputDirectory": "dist-static",
   "framework": null,
-  "installCommand": "npm install --ignore-scripts"
+  "installCommand": "npm install --ignore-scripts",
+  "cleanUrls": true
 }
