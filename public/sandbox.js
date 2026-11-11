@@ -2,10 +2,11 @@ const THREE = globalThis.THREE;
 
 const $ = (id) => document.getElementById(id);
 const WORLD_STORE = "miiengine-sandbox-world-v1";
+const PLAYER_STORE = "miiengine-sandbox-player-v1";
 const COMMON_UNUSED = ["#2d2828","#402010","#5c180a","#7c3a14","#787880","#4e3e10","#885818","#d0a04a","#000000","#6c7070","#663c2c","#605e30","#4654a8","#387058","#603810","#a81008","#203068","#a86000","#787068","#d85208","#f00c08","#f54848","#f09a74","#8c5040","#842626","#ff7366","#ffa6a6","#ffc0ba","#732e3b","#991f3d","#8a173e","#b53e42","#c71e56","#b05381","#c7546e","#fa7597","#fcacc9","#ffc9d8","#311c40","#37283d","#4c184d","#6f42b3","#855cb8","#c083cc","#a893c9","#c5ace6","#eebefa","#d2c5ed","#191f40","#123f66","#2a82d4","#57b4f2","#7ac5de","#89a6fa","#84bdfa","#a1e3ff","#0b2e36","#013d3b","#0d4f59","#236663","#307e8c","#4faeb0","#7ac49e","#7fd4c0","#87e5b6","#0a4a35","#437a00","#027562","#369970","#4bad1a","#92bf0a","#63c788","#9ee042","#96de7e","#bbf2aa","#99932b","#a69563","#ccc039","#ccb987","#d9cc82","#d5d96f","#d5e683","#d8fa9d","#7d4500","#e6bb7a","#fee24a","#fade82","#f7ea9c","#faf89b","#a64d1e","#ff960d","#d19b69","#ffb266","#ffc28c","#e5cfb1","#414141","#9b9b9b","#bebebe","#dcd7cd","#ffffff"];
 const SKIN_UNUSED = ["#FFD3AD","#FEB66B","#DE7942","#FFAA8C","#AD5129","#632C18","#ffbea5","#ffc58f","#8c3c23","#3c2d23"];
 const FAV_UNUSED = ["#d21e14","#ff6e19","#ffd820","#78d220","#007830","#0a48bc","#3caade","#f55a7d","#7328ad","#483818","#e0e0e0","#181814"];
-let avatar = {name:"",modelData:null};
+let avatar = read(PLAYER_STORE,{name:"",modelData:null});
 let placed = read(WORLD_STORE,[]);
 const world = $("world");
 const scene = new THREE.Scene();
@@ -59,7 +60,7 @@ async function makeAvatar(){
 }
 function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}}
 function setPlayerCard(){ $("avatar-preview").innerHTML="<span>✦</span><b>"+(avatar.name||"No Mii selected")+"</b>"}
-async function acceptMii(mii,modelData){if(!mii||typeof mii!=="object"||!modelData)return;avatar={name:mii.nickname||mii.name||"My Mii",modelData};setPlayerCard();await makeAvatar();$("tip").textContent="Loaded "+avatar.name+" as your player character."}
+async function acceptMii(mii,modelData){if(!mii||typeof mii!=="object"||!modelData)return;avatar={name:mii.nickname||mii.name||"My Mii",modelData};localStorage.setItem(PLAYER_STORE,JSON.stringify(avatar));setPlayerCard();await makeAvatar();$("tip").textContent="Loaded "+avatar.name+" as your player character."}
 $("choose-mii").addEventListener("click",()=>{const popup=window.open("/app?select","miiengine-mii-picker","popup,width=1180,height=820");if(!popup){$("tip").textContent="Allow pop-ups to choose a Mii from your library.";return}$("tip").textContent="Choose a Mii in the creator window. It will return here automatically."});
 window.addEventListener("message",e=>{if(e.origin!==location.origin)return;if(e.data?.type==="miic-select")acceptMii(e.data.data,e.data.modelData)});
 setPlayerCard();makeAvatar();
@@ -80,7 +81,7 @@ $("reset-position").addEventListener("click",()=>{player.x=0;player.z=4;yaw=0;av
 document.querySelectorAll("[data-tool]").forEach(b=>b.addEventListener("click",()=>{mode=b.dataset.tool;document.querySelectorAll("[data-tool]").forEach(x=>x.classList.toggle("active",x===b));$("object-field").style.display=mode==="walk"?"none":"flex";$("tip").textContent=mode==="build"?"Choose an object, then click the ground to place it.":mode==="paint"?"Paint mode is ready — choose a block and place it.":"Explore the island with WASD or the arrow keys."}));
 $("object-field").style.display="none";
 document.querySelectorAll("[data-move]").forEach(b=>{const key={forward:"w",back:"s",left:"a",right:"d",jump:" "}[b.dataset.move];b.addEventListener("pointerdown",e=>{e.preventDefault();keys.add(key)});["pointerup","pointerleave","pointercancel"].forEach(ev=>b.addEventListener(ev,()=>keys.delete(key)))});
-$("save-world").addEventListener("click",()=>{$("tip").textContent="Your character and placed objects are saved in this browser."});
+$("save-world").addEventListener("click",()=>{$("tip").textContent="Your island layout and selected Mii are saved in this browser."});
 function loadPlaced(){for(const p of placed)placeObject(p.x,p.z,false)}
 loadPlaced();
 function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.04);const forward=(keys.has("w")||keys.has("arrowup")?1:0)-(keys.has("s")||keys.has("arrowdown")?1:0);const side=(keys.has("d")||keys.has("arrowright")?1:0)-(keys.has("a")||keys.has("arrowleft")?1:0);const dir=new THREE.Vector3(side,0,-forward);if(dir.lengthSq()>0){dir.normalize().applyAxisAngle(new THREE.Vector3(0,1,0),yaw);player.x+=dir.x*player.speed*dt;player.z+=dir.z*player.speed*dt;avatarRoot.rotation.y=Math.atan2(dir.x,dir.z);avatarRoot.position.x=player.x;avatarRoot.position.z=player.z}
