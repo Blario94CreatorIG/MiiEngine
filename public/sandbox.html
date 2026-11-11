@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#101827">
+  <meta name="description" content="Explore a 3D sandbox as your own Mii character.">
+  <title>Mii Creator — 3D World</title>
+  <link rel="icon" href="/assets/images/favicon.ico">
+  <link rel="stylesheet" href="/sandbox.css">
+</head>
+<body>
+  <main class="game-shell">
+    <header class="topbar">
+      <a class="brand" href="/"><span class="brand-mark">M</span><span>Mii Creator <small>MIIENGINE 3D WORLD</small></span></a>
+      <div class="top-actions">
+        <a class="soft-button" href="/app">← Mii Creator</a>
+        <button class="soft-button" id="save-world">Save world</button>
+      </div>
+    </header>
+    <section class="game-layout">
+      <aside class="panel">
+        <div class="eyebrow">PLAYER</div>
+        <h1>Your Mii's world.</h1>
+        <p class="muted">Create or edit your character in Mii Creator, then select it to explore this world.</p>
+        <button class="primary-button full" id="choose-mii">Select a saved Mii</button>
+        <div class="avatar-preview" id="avatar-preview"><span>✦</span><b>No Mii selected</b></div>
+        <p class="hint">To create or edit a Mii, open the Mii Maker using the link above. Your selected Mii will appear here as its original 3D model.</p>
+        <div class="divider"></div>
+        <div class="eyebrow">SANDBOX TOOLS</div>
+        <div class="tool-grid">
+          <button class="tool active" data-tool="walk">↗<span>Explore</span></button>
+          <button class="tool" data-tool="build">▦<span>Build</span></button>
+          <button class="tool" data-tool="paint">◉<span>Paint</span></button>
+        </div>
+        <label class="field" id="object-field">Place object
+          <select id="object-type"><option value="block">Color block</option><option value="tree">Tree</option><option value="lamp">Lamp</option><option value="bench">Bench</option><option value="flower">Flower patch</option></select>
+        </label>
+        <div class="hint">Click the world to place objects while Build is selected.</div>
+        <div class="divider"></div>
+        <div class="eyebrow">HOW TO PLAY</div>
+        <div class="key-row"><kbd>W A S D</kbd><span>Move around</span></div>
+        <div class="key-row"><kbd>SPACE</kbd><span>Jump</span></div>
+        <div class="key-row"><kbd>DRAG</kbd><span>Rotate camera</span></div>
+        <div class="key-row"><kbd>E</kbd><span>Interact nearby</span></div>
+      </aside>
+      <section class="world-wrap">
+        <div id="world" aria-label="3D sandbox game world">
+          <div class="loading" id="loading"><div class="loader-dot"></div><b>Building your world…</b><span>Preparing the island</span></div>
+        </div>
+        <div class="world-hud">
+          <div class="world-label"><span class="live-dot"></span><span id="world-status">SUNNY ISLAND</span></div>
+          <div class="hud-right"><span id="coin-count">✦ 0</span><button id="reset-position" title="Return to spawn">⌖</button></div>
+        </div>
+        <div class="world-bottom">
+          <div class="tip" id="tip">Welcome! Walk around and explore your island.</div>
+          <div class="mobile-controls"><button data-move="forward">▲</button><div><button data-move="left">◀</button><button data-move="back">▼</button><button data-move="right">▶</button></div><button data-move="jump">⤒</button></div>
+        </div>
+      </section>
+    </section>
+    <footer>Fan-made Mii sandbox expansion · Not affiliated with Nintendo.</footer>
+  </main>
+  <script type="module" src="/sandbox-game-entry.js"></script>
+</body>
+</html>

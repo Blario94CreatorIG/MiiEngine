@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build:static",
+  "outputDirectory": "dist-static",
+  "framework": null,
+  "installCommand": "npm install --ignore-scripts",
+  "cleanUrls": true
+}

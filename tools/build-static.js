@@ -19,6 +19,7 @@
 const fs = require("fs");
 const path = require("path");
 const { build } = require("./build");
+const { buildSandbox } = require("./build-sandbox");
 const { enabledFlags, injectIntoHead, flagScript } = require("../lib/debug-flags");
 
 const ROOT = path.resolve(__dirname, "..");
@@ -85,6 +86,8 @@ const fixRelative = (s) => s.replace(/(\s(?:src|href)=)(["'])(?=(?:dist|assets)\
 
 // ---------- build ----------
 const r = build(path.join(PUBLIC, "dist/main.js"));
+const sandboxBuild = buildSandbox(path.join(PUBLIC, "dist/sandbox-renderer.js"));
+console.log(`[sandbox build] ${sandboxBuild.files} source files`);
 console.log(`[build] main.js from ${r.files} source files`);
 
 fs.rmSync(OUT, { recursive: true, force: true });
