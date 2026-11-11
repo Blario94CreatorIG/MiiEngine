@@ -40,7 +40,7 @@ function bench(x,z){const g=new THREE.Group();box(g,0,.62,0,1.9,.18,.58,woodMat)
 bench(-6,1);bench(6,2);
 const collectibles=[];
 for(let i=0;i<8;i++){const a=i*Math.PI/4;const c=new THREE.Mesh(new THREE.TorusGeometry(.28,.09,10,24),mat("#ffdb62"));c.position.set(Math.cos(a)*7,.8,Math.sin(a)*7);c.rotation.x=Math.PI/2;c.castShadow=true;scene.add(c);collectibles.push(c)}
-const avatarRoot=new THREE.Group();scene.add(avatarRoot);
+const avatarRoot=new THREE.Group();avatarRoot.position.set(0,0,4);scene.add(avatarRoot);
 let activeNativeModel=null;
 async function makeAvatar(){
   if(activeNativeModel){activeNativeModel.dispose?.();activeNativeModel=null;}
@@ -60,7 +60,7 @@ async function makeAvatar(){
 }
 function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}}
 function setPlayerCard(){ $("avatar-preview").innerHTML="<span>✦</span><b>"+(avatar.name||"No Mii selected")+"</b>"}
-async function acceptMii(mii,modelData){if(!mii||typeof mii!=="object"||!modelData)return;avatar={name:mii.nickname||mii.name||"My Mii",modelData};localStorage.setItem(PLAYER_STORE,JSON.stringify(avatar));setPlayerCard();await makeAvatar();$("tip").textContent="Loaded "+avatar.name+" as your player character."}
+async function acceptMii(mii,modelData){if(!mii||typeof mii!=="object"||!modelData)return;avatar={name:mii.nickname||mii.name||"My Mii",modelData};localStorage.setItem(PLAYER_STORE,JSON.stringify(avatar));setPlayerCard();await applyCreatorAppearance();await makeAvatar();$("tip").textContent="Loaded "+avatar.name+" as your player character."}
 $("choose-mii").addEventListener("click",()=>{const popup=window.open("/select.html","miiengine-mii-picker","popup,width=1180,height=860");if(!popup){$("tip").textContent="Allow pop-ups to choose a Mii from your library.";return}$("tip").textContent="Choose a Mii in the creator window. It will return here automatically."});
 window.addEventListener("message",e=>{if(e.origin!==location.origin)return;if(e.data?.type==="miic-select")acceptMii(e.data.data,e.data.modelData)});
 async function applyCreatorAppearance(){
