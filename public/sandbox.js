@@ -61,9 +61,27 @@ async function makeAvatar(){
 function read(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}}
 function setPlayerCard(){ $("avatar-preview").innerHTML="<span>✦</span><b>"+(avatar.name||"No Mii selected")+"</b>"}
 async function acceptMii(mii,modelData){if(!mii||typeof mii!=="object"||!modelData)return;avatar={name:mii.nickname||mii.name||"My Mii",modelData};localStorage.setItem(PLAYER_STORE,JSON.stringify(avatar));setPlayerCard();await makeAvatar();$("tip").textContent="Loaded "+avatar.name+" as your player character."}
-$("choose-mii").addEventListener("click",()=>{const popup=window.open("/app?select","miiengine-mii-picker","popup,width=1180,height=820");if(!popup){$("tip").textContent="Allow pop-ups to choose a Mii from your library.";return}$("tip").textContent="Choose a Mii in the creator window. It will return here automatically."});
+$("choose-mii").addEventListener("click",()=>{const popup=window.open("/select.html","miiengine-mii-picker","popup,width=1180,height=860");if(!popup){$("tip").textContent="Allow pop-ups to choose a Mii from your library.";return}$("tip").textContent="Choose a Mii in the creator window. It will return here automatically."});
 window.addEventListener("message",e=>{if(e.origin!==location.origin)return;if(e.data?.type==="miic-select")acceptMii(e.data.data,e.data.modelData)});
-setPlayerCard();makeAvatar();
+async function applyCreatorAppearance(){
+  try {
+    const appearance=await window.MiiSandboxNative.getAppearance();
+    const root=document.documentElement;
+    root.dataset.creatorTheme=appearance.theme;
+    root.dataset.creatorScheme=appearance.colorScheme;
+    root.dataset.creatorSpaceScheme=appearance.colorSchemeSpace;
+    root.dataset.creatorShader=appearance.shaderType;
+    const labels={classic:"CLASSIC",sw2:"SWITCH 2",space:"SPACE",wii:"WII",wiiu:"WII U",miitomo:"MIITOMO"};
+    $("world-status").textContent=(labels[appearance.theme]||"MII CREATOR")+" WORLD";
+    if(appearance.shaderType==="lightDisabled"){hemi.intensity=1.1;sun.intensity=.65;}
+    else if(appearance.shaderType.indexOf("wii")===0||appearance.shaderType==="wiiu"){hemi.intensity=1.55;sun.intensity=1.45;}
+    else if(appearance.shaderType==="three_phong"||appearance.shaderType==="three_standard"){hemi.intensity=1.8;sun.intensity=2.1;}
+    else{hemi.intensity=1.8;sun.intensity=1.9;}
+  } catch(error) { console.warn("Could not read Mii Creator appearance settings:",error); }
+}
+setPlayerCard();
+applyCreatorAppearance();
+makeAvatar();
 
 const keys=new Set();let yaw=0,dragging=false,lastX=0,lastY=0,pitch=.28,velocityY=0,onGround=true,mode="walk",coins=0;
 const player={x:0,z:4,speed:5.2};const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();const groundPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
