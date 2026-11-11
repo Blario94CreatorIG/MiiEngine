@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#484848">
+<title>Select a Mii · Mii Creator</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#f7f7fb;background:#171923;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:radial-gradient(ellipse at 50% -15%,#4c4773 0,#24243a 42%,#141722 100%)}
+header{height:68px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;border-bottom:1px solid #ffffff20;background:#141722cc;backdrop-filter:blur(16px)}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:-.3px}.mark{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:linear-gradient(140deg,#b7a9ff,#7564db);color:#17142d;font-size:22px}
+.brand small{display:block;color:#b5abd9;font-size:9px;letter-spacing:1.8px;margin-top:2px}
+main{flex:1;display:flex;flex-direction:column;min-height:0;padding:18px;gap:12px}
+.intro{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:0 4px}
+h1{font-size:20px;letter-spacing:-.6px;margin:0 0 4px}.intro p{margin:0;color:#c0bfd2;font-size:12px}
+.close{border:1px solid #ffffff30;background:#ffffff10;color:#fff;border-radius:10px;padding:10px 14px;font:600 12px inherit;cursor:pointer}
+.frame{flex:1;min-height:500px;border:1px solid #ffffff2a;border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 18px 60px #0005}
+iframe{display:block;width:100%;height:100%;min-height:500px;border:0;background:#fff}
+footer{text-align:center;color:#a5a5bc;font-size:10px;padding:0 12px 12px}
+@media(max-width:600px){header{height:58px;padding:0 13px}main{padding:10px}.intro{align-items:flex-start}.intro p{max-width:250px;line-height:1.4}.frame,iframe{min-height:65vh}.close{padding:8px 10px}}
+</style>
+</head>
+<body>
+<header><div class="brand"><span class="mark">M</span><span>Mii Creator<small>CHARACTER SELECT</small></span></div><button class="close" id="close">Close window</button></header>
+<main><div class="intro"><div><h1>Choose your Mii</h1><p>Select a character from your Mii Creator library. It will be sent back to MiiEngine automatically.</p></div></div>
+<div class="frame"><iframe title="Mii Creator character library" src="/app?select&embedded"></iframe></div></main>
+<footer>Your Mii stays in your Mii Creator library. Selection is shared with MiiEngine on this device.</footer>
+<script>
+document.getElementById("close").addEventListener("click",()=>window.close());
+window.addEventListener("message",event=>{
+  if(event.origin!==location.origin||event.data?.type!=="miic-select")return;
+  if(window.opener&&!window.opener.closed){
+    window.opener.postMessage(event.data,location.origin);
+    window.close();
+  }else{
+    document.querySelector("h1").textContent="Mii selected";
+    document.querySelector(".intro p").textContent="Your character was selected. You can close this page.";
+  }
+});
+</script>
+</body></html>
