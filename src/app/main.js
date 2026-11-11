@@ -299,7 +299,7 @@ Loading will not continue.`,
     else if (t.has("select")) {
       let { miiData: h, mii: f } = await openLibrary(void 0, !0);
       (window.opener.postMessage(
-        { type: "miic-select", data: f, name: h.nickname, creator: h.creator },
+        { type: "miic-select", data: f, modelData: f.exportHex("studioData"), name: h.nickname, creator: h.creator },
         "*",
       ),
         close());
