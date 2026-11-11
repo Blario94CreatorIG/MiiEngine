@@ -298,11 +298,11 @@ Loading will not continue.`,
         ));
     else if (t.has("select")) {
       let { miiData: h, mii: f } = await openLibrary(void 0, !0);
-      (window.opener.postMessage(
+      ((window.opener || window.parent).postMessage(
         { type: "miic-select", data: f, modelData: f.exportHex("studioData"), name: h.nickname, creator: h.creator },
-        "*",
+        location.origin,
       ),
-        close());
+        window.opener ? close() : void 0);
     } else if (t.has("add-mii")) {
       let h = new Mii(decodeHexOrBase64(t.get("add-mii"))),
         f = translate("Mii Creator");
